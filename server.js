@@ -2,7 +2,6 @@
 //  Vehicle Insurance Management System — Express.js Server
 // ============================================================
 const express = require('express');
-const { DatabaseSync } = require('node:sqlite');
 const cors = require('cors');
 const path = require('path');
 
@@ -14,9 +13,16 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ── Database ── (use /tmp on Vercel; local path otherwise)
+// ── Database ── (better-sqlite3 on Vercel/Linux; node:sqlite locally on Node 24)
 const DB_PATH = process.env.VERCEL ? '/tmp/database.db' : path.join(__dirname, 'database.db');
-const db = new DatabaseSync(DB_PATH);
+let db;
+try {
+  const Database = require('better-sqlite3');
+  db = new Database(DB_PATH);
+} catch (e) {
+  const { DatabaseSync } = require('node:sqlite');
+  db = new DatabaseSync(DB_PATH);
+}
 db.exec('PRAGMA journal_mode = WAL');
 db.exec('PRAGMA foreign_keys = ON');
 
