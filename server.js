@@ -7,15 +7,16 @@ const cors = require('cors');
 const path = require('path');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // ── Middleware ──
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ── Database ──
-const db = new DatabaseSync(path.join(__dirname, 'database.db'));
+// ── Database ── (use /tmp on Vercel; local path otherwise)
+const DB_PATH = process.env.VERCEL ? '/tmp/database.db' : path.join(__dirname, 'database.db');
+const db = new DatabaseSync(DB_PATH);
 db.exec('PRAGMA journal_mode = WAL');
 db.exec('PRAGMA foreign_keys = ON');
 
@@ -601,8 +602,13 @@ app.get('/api/report', (req, res) => {
 
 // ── Start ──
 initDB();
-app.listen(PORT, () => {
-  console.log(`\n🚗  Vehicle Insurance Management System`);
-  console.log(`✅  Server running at http://localhost:${PORT}`);
-  console.log(`📊  Open your browser to get started\n`);
-});
+
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`\n🚗  Vehicle Insurance Management System`);
+    console.log(`✅  Server running at http://localhost:${PORT}`);
+    console.log(`📊  Open your browser to get started\n`);
+  });
+}
+
+module.exports = app;

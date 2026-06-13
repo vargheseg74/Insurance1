@@ -13,5 +13,8 @@
   },
   "keywords": ["insurance", "vehicle", "management", "express", "sqlite"],
   "author": "AutoShield Systems",
-  "license": "MIT"
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.5.0"
+  }
 }
