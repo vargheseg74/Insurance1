@@ -1,0 +1,82 @@
+PROMPT USED TO GENERATE THIS PROJECT
+=====================================
+Submitted to: Claude Code (claude-sonnet-4-6)
+Date: 2026-06-10
+
+---
+
+Create a complete Vehicle Insurance Management Web Application with frontend, backend, and database.
+
+Technology:
+  Frontend : HTML, CSS, JavaScript
+  Backend  : Node.js with Express.js
+  Database : SQLite
+  Charts   : Chart.js
+
+App Name:
+  Vehicle Insurance Management System
+
+Create full project files:
+  index.html
+  style.css
+  script.js
+  server.js
+  database.db
+  package.json
+  README.md
+  Instructions.md
+  Workflow.md
+  Prompt_For_Claude_Code.txt
+  Final_Report_Should_be_Generated_By_Claude_Code.txt
+
+Full Workflow:
+  1.  Customer registration
+  2.  Add vehicle details
+  3.  Select insurance type
+  4.  Calculate premium automatically
+  5.  Generate insurance policy
+  6.  View all policies
+  7.  Submit claim request
+  8.  Track claim status
+  9.  Renewal reminder
+  10. Payment summary
+  11. Admin dashboard
+  12. Final report
+
+Dashboard Features:
+  - Total customers
+  - Total vehicles
+  - Active policies
+  - Expired policies
+  - Total premium collected
+  - Claims submitted
+  - Claims approved
+  - Claims rejected
+
+Frontend Design:
+  - Modern professional dashboard
+  - Responsive design
+  - Sidebar menu
+  - KPI cards
+  - Forms
+  - Tables
+  - Buttons
+  - Charts
+  - Clean CSS
+
+Backend Features:
+  - REST API using Express.js
+  - SQLite database tables for customers, vehicles, policies, claims, payments
+  - CRUD operations
+  - Sample data
+  - Error handling
+
+Important:
+  Make the app fully working.
+  Give setup commands.
+  Give run command.
+  Keep code simple and beginner friendly.
+  After creation, explain the folder structure and how to run the project.
+
+---
+END OF PROMPT

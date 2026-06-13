@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AutoShield — Vehicle Insurance</title>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary:   #1a56db;
+      --primary-d: #1040b0;
+      --accent:    #0ea5e9;
+      --success:   #10b981;
+      --warning:   #f59e0b;
+      --danger:    #ef4444;
+      --bg:        #f0f4ff;
+      --card:      #ffffff;
+      --border:    #d1d9f0;
+      --text:      #1e293b;
+      --muted:     #64748b;
+      --radius:    12px;
+      --shadow:    0 4px 24px rgba(26,86,219,.10);
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Navbar ── */
+    nav {
+      background: linear-gradient(135deg, #0f2b77 0%, var(--primary) 100%);
+      color: #fff;
+      padding: 0 32px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 12px rgba(0,0,0,.25);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; font-size: 1.4rem; font-weight: 700; }
+    .nav-brand svg { width: 36px; height: 36px; }
+    .nav-links { display: flex; gap: 24px; font-size: .9rem; }
+    .nav-links a { color: rgba(255,255,255,.8); text-decoration: none; transition: color .2s; }
+    .nav-links a:hover { color: #fff; }
+    .nav-phone { font-size: .85rem; color: rgba(255,255,255,.75); }
+    .nav-phone span { color: #fff; font-weight: 600; }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(135deg, #0f2b77 0%, var(--primary) 60%, var(--accent) 100%);
+      color: #fff;
+      padding: 48px 32px 72px;
+      text-align: center;
+    }
+    .hero h1 { font-size: clamp(1.6rem, 4vw, 2.6rem); font-weight: 800; margin-bottom: 12px; }
+    .hero p  { font-size: 1.05rem; opacity: .85; max-width: 560px; margin: 0 auto 28px; }
+    .trust-badges { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; margin-top: 16px; }
+    .badge { background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.3);
+             border-radius: 999px; padding: 6px 18px; font-size: .82rem; }
+
+    /* ── Main Layout ── */
+    .container { max-width: 900px; margin: -36px auto 48px; padding: 0 16px; }
+
+    /* ── Stepper ── */
+    .stepper {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      background: var(--card); border-radius: var(--radius); padding: 20px 24px;
+      box-shadow: var(--shadow); margin-bottom: 24px; position: relative;
+    }
+    .stepper::before {
+      content: ''; position: absolute; top: 32px; left: 60px; right: 60px;
+      height: 2px; background: var(--border); z-index: 0;
+    }
+    .step-item { display: flex; flex-direction: column; align-items: center; gap: 6px;
+                 position: relative; z-index: 1; flex: 1; }
+    .step-circle {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 2px solid var(--border); background: var(--card);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: .85rem; color: var(--muted); transition: all .3s;
+    }
+    .step-item.done .step-circle  { background: var(--success); border-color: var(--success); color: #fff; }
+    .step-item.active .step-circle{ background: var(--primary); border-color: var(--primary); color: #fff; }
+    .step-label { font-size: .72rem; color: var(--muted); text-align: center; font-weight: 500; transition: color .3s; }
+    .step-item.active .step-label { color: var(--primary); font-weight: 700; }
+    .step-item.done  .step-label  { color: var(--success); }
+
+    /* ── Card ── */
+    .card {
+      background: var(--card); border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 32px;
+    }
+    .card-header { margin-bottom: 28px; }
+    .card-header h2 { font-size: 1.35rem; font-weight: 700; }
+    .card-header p  { color: var(--muted); font-size: .9rem; margin-top: 4px; }
+
+    /* ── Form Elements ── */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .form-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .form-grid.cols-1 { grid-template-columns: 1fr; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field.span-2 { grid-column: span 2; }
+    .field.span-3 { grid-column: span 3; }
+
+    label { font-size: .85rem; font-weight: 600; color: var(--text); }
+    label .req { color: var(--danger); margin-left: 2px; }
+
+    input, select, textarea {
+      height: 44px; border: 1.5px solid var(--border); border-radius: 8px;
+      padding: 0 14px; font-size: .95rem; color: var(--text);
+      background: #f8faff; outline: none; transition: border-color .2s, box-shadow .2s;
+      width: 100%;
+    }
+    textarea { height: 80px; padding: 10px 14px; resize: vertical; }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,86,219,.12);
+      background: #fff;
+    }
+    input.error, select.error { border-color: var(--danger); }
+    .field-hint { font-size: .78rem; color: var(--muted); }
+    .field-error { font-size: .78rem; color: var(--danger); display: none; }
+    .field-error.show { display: block; }
+
+    /* ── Section Divider ── */
+    .section-title {
+      font-size: .8rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; color: var(--primary); margin: 28px 0 16px;
+      padding-bottom: 8px; border-bottom: 2px solid #e8eeff;
+    }
+
+    /* ── Coverage Cards ── */
+    .coverage-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .cov-card {
+      border: 2px solid var(--border); border-radius: 10px; padding: 16px;
+      cursor: pointer; transition: all .2s; position: relative; user-select: none;
+    }
+    .cov-card:hover { border-color: var(--primary); background: #f0f4ff; }
+    .cov-card.selected { border-color: var(--primary); background: #eef3ff; }
+    .cov-card.required-cov { border-color: var(--success); background: #f0fdf4; cursor: default; }
+    .cov-card input[type=checkbox] { position: absolute; top: 14px; right: 14px; width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; }
+    .cov-title { font-weight: 700; font-size: .95rem; margin-bottom: 4px; padding-right: 28px; }
+    .cov-desc  { font-size: .8rem; color: var(--muted); margin-bottom: 8px; }
+    .cov-price { font-size: .85rem; font-weight: 600; color: var(--primary); }
+    .cov-badge { display: inline-block; font-size: .7rem; padding: 2px 8px; border-radius: 999px;
+                 background: var(--success); color: #fff; margin-left: 8px; font-weight: 600; }
+
+    /* Deductible + limit selectors within coverage */
+    .cov-options { margin-top: 10px; display: none; }
+    .cov-card.selected .cov-options,
+    .cov-card.required-cov .cov-options { display: block; }
+    .cov-options label { font-size: .78rem; margin-bottom: 4px; display: block; }
+    .cov-options select { height: 36px; font-size: .83rem; }
+
+    /* ── Driving Record ── */
+    .incident-list { display: flex; flex-direction: column; gap: 12px; }
+    .incident-row {
+      display: grid; grid-template-columns: 1fr 1fr 1fr auto;
+      gap: 10px; align-items: end;
+      background: #f8faff; border: 1px solid var(--border); border-radius: 8px; padding: 12px;
+    }
+    .incident-row .field { margin: 0; }
+    .btn-remove {
+      background: #fee2e2; color: var(--danger); border: none; border-radius: 6px;
+      width: 36px; height: 36px; cursor: pointer; font-size: 1.1rem; display: flex;
+      align-items: center; justify-content: center; transition: background .2s;
+    }
+    .btn-remove:hover { background: #fca5a5; }
+    .btn-add-incident {
+      display: flex; align-items: center; gap: 8px; color: var(--primary);
+      background: none; border: 2px dashed var(--border); border-radius: 8px;
+      padding: 10px 16px; cursor: pointer; font-size: .88rem; font-weight: 600;
+      width: 100%; justify-content: center; margin-top: 8px; transition: all .2s;
+    }
+    .btn-add-incident:hover { border-color: var(--primary); background: #f0f4ff; }
+
+    /* ── Buttons ── */
+    .btn-row { display: flex; justify-content: space-between; margin-top: 32px; align-items: center; }
+    .btn {
+      padding: 12px 28px; border-radius: 8px; border: none; font-size: .95rem;
+      font-weight: 600; cursor: pointer; transition: all .2s; display: flex;
+      align-items: center; gap: 8px;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-d); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(26,86,219,.3); }
+    .btn-secondary { background: #e8eeff; color: var(--primary); }
+    .btn-secondary:hover { background: #d1d9f0; }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-success:hover { background: #059669; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(16,185,129,.3); }
+
+    /* ── Quote Summary ── */
+    .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .summary-section { }
+    .summary-section h3 { font-size: .95rem; font-weight: 700; color: var(--primary); margin-bottom: 12px;
+                          padding-bottom: 8px; border-bottom: 2px solid #e8eeff; }
+    .summary-row { display: flex; justify-content: space-between; padding: 6px 0;
+                   border-bottom: 1px solid #f1f5f9; font-size: .88rem; }
+    .summary-row:last-child { border-bottom: none; }
+    .summary-row .key { color: var(--muted); }
+    .summary-row .val { font-weight: 600; }
+
+    /* ── Price Box ── */
+    .price-box {
+      background: linear-gradient(135deg, #0f2b77, var(--primary));
+      color: #fff; border-radius: var(--radius); padding: 28px;
+      text-align: center; margin: 24px 0;
+    }
+    .price-label { font-size: .85rem; opacity: .8; margin-bottom: 4px; }
+    .price-annual { font-size: 3rem; font-weight: 800; line-height: 1; }
+    .price-monthly { font-size: 1rem; opacity: .75; margin-top: 4px; }
+    .price-breakdown { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 20px; }
+    .price-item {
+      background: rgba(255,255,255,.15); border-radius: 8px; padding: 8px 14px;
+      font-size: .8rem; text-align: center;
+    }
+    .price-item .pi-label { opacity: .75; }
+    .price-item .pi-val   { font-weight: 700; font-size: .95rem; margin-top: 2px; }
+
+    /* ── Discounts ── */
+    .discount-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .discount-badge {
+      background: #f0fdf4; border: 1px solid #86efac; color: #166534;
+      border-radius: 999px; padding: 4px 12px; font-size: .78rem; font-weight: 600;
+    }
+
+    /* ── Success Screen ── */
+    .success-screen { text-align: center; padding: 20px 0; }
+    .success-icon { font-size: 4rem; margin-bottom: 16px; }
+    .success-screen h2 { font-size: 1.6rem; font-weight: 800; margin-bottom: 8px; }
+    .success-screen p  { color: var(--muted); max-width: 460px; margin: 0 auto 24px; }
+    .policy-card {
+      background: linear-gradient(135deg, #0f2b77, var(--primary));
+      color: #fff; border-radius: var(--radius); padding: 24px; max-width: 380px;
+      margin: 0 auto 28px; text-align: left;
+    }
+    .policy-number { font-size: .8rem; opacity: .7; margin-bottom: 4px; }
+    .policy-id { font-size: 1.5rem; font-weight: 800; letter-spacing: .06em; margin-bottom: 16px; }
+    .policy-detail { display: flex; justify-content: space-between; font-size: .85rem; margin-top: 8px; }
+    .policy-detail span { opacity: .75; }
+    .policy-detail strong { font-weight: 700; }
+
+    /* ── Range Slider ── */
+    .slider-wrap { display: flex; flex-direction: column; gap: 4px; }
+    .slider-wrap input[type=range] {
+      height: auto; padding: 0; background: transparent; border: none; box-shadow: none;
+      accent-color: var(--primary);
+    }
+    .slider-labels { display: flex; justify-content: space-between; font-size: .75rem; color: var(--muted); }
+
+    /* ── Radio Pills ── */
+    .radio-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+    .radio-pill input { display: none; }
+    .radio-pill label {
+      padding: 8px 18px; border: 2px solid var(--border); border-radius: 999px;
+      cursor: pointer; font-size: .85rem; font-weight: 600; transition: all .2s;
+    }
+    .radio-pill input:checked + label { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .form-grid, .form-grid.cols-3, .coverage-grid, .summary-grid { grid-template-columns: 1fr; }
+      .field.span-2, .field.span-3 { grid-column: span 1; }
+      .card { padding: 20px 16px; }
+      .incident-row { grid-template-columns: 1fr 1fr; }
+      .incident-row .field:nth-child(3) { grid-column: span 2; }
+      nav .nav-links, nav .nav-phone { display: none; }
+      .stepper { overflow-x: auto; }
+    }
+
+    /* ── Animations ── */
+    .step-pane { display: none; animation: fadeIn .3s ease; }
+    .step-pane.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    /* ── Tooltip ── */
+    [data-tip] { position: relative; cursor: help; }
+    [data-tip]:hover::after {
+      content: attr(data-tip); position: absolute; bottom: calc(100% + 6px); left: 50%;
+      transform: translateX(-50%); background: #1e293b; color: #fff; font-size: .75rem;
+      padding: 6px 10px; border-radius: 6px; white-space: nowrap; z-index: 50;
+      pointer-events: none;
+    }
+
+    /* ── Footer ── */
+    footer {
+      background: #0f2b77; color: rgba(255,255,255,.6); text-align: center;
+      padding: 20px; font-size: .8rem; margin-top: 32px;
+    }
+    footer a { color: rgba(255,255,255,.8); }
+  </style>
+</head>
+<body>
+
+<!-- ── Navbar ── -->
+<nav>
+  <div class="nav-brand">
+    <svg viewBox="0 0 36 36" fill="none">
+      <rect width="36" height="36" rx="8" fill="rgba(255,255,255,.15)"/>
+      <path d="M6 22l3-8h18l3 8" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+      <path d="M4 22h28v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4z" fill="rgba(255,255,255,.25)" stroke="#fff" stroke-width="2"/>
+      <circle cx="10" cy="26" r="2.5" fill="#fff"/>
+      <circle cx="26" cy="26" r="2.5" fill="#fff"/>
+      <path d="M14 14h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    AutoShield
+  </div>
+  <div class="nav-links">
+    <a href="#">Home</a>
+    <a href="#">Products</a>
+    <a href="#">Claims</a>
+    <a href="#">About</a>
+  </div>
+  <div class="nav-phone">Call us: <span>1-800-AUTO-INS</span></div>
+</nav>
+
+<!-- ── Hero ── -->
+<div class="hero">
+  <h1>Get Your Free Vehicle Insurance Quote</h1>
+  <p>Fast, affordable coverage tailored to you. 5 minutes to complete — instant quote guaranteed.</p>
+  <div class="trust-badges">
+    <span class="badge">&#10003; A+ Rated Insurer</span>
+    <span class="badge">&#10003; No Hidden Fees</span>
+    <span class="badge">&#10003; Cancel Anytime</span>
+    <span class="badge">&#10003; 24/7 Claims Support</span>
+  </div>
+</div>
+
+<!-- ── Main ── -->
+<div class="container">
+
+  <!-- Progress Stepper -->
+  <div class="stepper" id="stepper">
+    <div class="step-item active" data-step="1">
+      <div class="step-circle">1</div>
+      <div class="step-label">Personal Info</div>
+    </div>
+    <div class="step-item" data-step="2">
+      <div class="step-circle">2</div>
+      <div class="step-label">Vehicle</div>
+    </div>
+    <div class="step-item" data-step="3">
+      <div class="step-circle">3</div>
+      <div class="step-label">Driving History</div>
+    </div>
+    <div class="step-item" data-step="4">
+      <div class="step-circle">4</div>
+      <div class="step-label">Coverage</div>
+    </div>
+    <div class="step-item" data-step="5">
+      <div class="step-circle">5</div>
+      <div class="step-label">Your Quote</div>
+    </div>
+  </div>
+
+  <!-- ══ STEP 1 — Personal Info ══ -->
+  <div class="card step-pane active" id="step1">
+    <div class="card-header">
+      <h2>Personal Information</h2>
+      <p>Tell us about the primary policyholder</p>
+    </div>
+    <form id="form1" novalidate>
+      <div class="form-grid">
+        <div class="field">
+          <label>First Name <span class="req">*</span></label>
+          <input type="text" id="firstName" placeholder="Jane" />
+          <span class="field-error" id="err-firstName">Please enter your first name.</span>
+        </div>
+        <div class="field">
+          <label>Last Name <span class="req">*</span></label>
+          <input type="text" id="lastName" placeholder="Smith" />
+          <span class="field-error" id="err-lastName">Please enter your last name.</span>
+        </div>
+        <div class="field">
+          <label>Date of Birth <span class="req">*</span></label>
+          <input type="date" id="dob" />
+          <span class="field-error" id="err-dob">You must be at least 16 years old.</span>
+        </div>
+        <div class="field">
+          <label>Gender</label>
+          <select id="gender">
+            <option value="">Select…</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Non-binary</option>
+            <option>Prefer not to say</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Email Address <span class="req">*</span></label>
+          <input type="email" id="email" placeholder="jane@email.com" />
+          <span class="field-error" id="err-email">Please enter a valid email address.</span>
+        </div>
+        <div class="field">
+          <label>Phone Number <span class="req">*</span></label>
+          <input type="tel" id="phone" placeholder="(555) 000-0000" />
+          <span class="field-error" id="err-phone">Please enter a valid phone number.</span>
+        </div>
+        <div class="field span-2">
+          <label>Street Address <span class="req">*</span></label>
+          <input type="text" id="address" placeholder="123 Main St" />
+          <span class="field-error" id="err-address">Please enter your address.</span>
+        </div>
+        <div class="field">
+          <label>City <span class="req">*</span></label>
+          <input type="text" id="city" placeholder="Springfield" />
+          <span class="field-error" id="err-city">Please enter your city.</span>
+        </div>
+        <div class="field">
+          <label>State <span class="req">*</span></label>
+          <select id="state">
+            <option value="">Select state…</option>
+            <option>Alabama</option><option>Alaska</option><option>Arizona</option>
+            <option>Arkansas</option><option>California</option><option>Colorado</option>
+            <option>Connecticut</option><option>Delaware</option><option>Florida</option>
+            <option>Georgia</option><option>Hawaii</option><option>Idaho</option>
+            <option>Illinois</option><option>Indiana</option><option>Iowa</option>
+            <option>Kansas</option><option>Kentucky</option><option>Louisiana</option>
+            <option>Maine</option><option>Maryland</option><option>Massachusetts</option>
+            <option>Michigan</option><option>Minnesota</option><option>Mississippi</option>
+            <option>Missouri</option><option>Montana</option><option>Nebraska</option>
+            <option>Nevada</option><option>New Hampshire</option><option>New Jersey</option>
+            <option>New Mexico</option><option>New York</option><option>North Carolina</option>
+            <option>North Dakota</option><option>Ohio</option><option>Oklahoma</option>
+            <option>Oregon</option><option>Pennsylvania</option><option>Rhode Island</option>
+            <option>South Carolina</option><option>South Dakota</option><option>Tennessee</option>
+            <option>Texas</option><option>Utah</option><option>Vermont</option>
+            <option>Virginia</option><option>Washington</option><option>West Virginia</option>
+            <option>Wisconsin</option><option>Wyoming</option>
+          </select>
+          <span class="field-error" id="err-state">Please select a state.</span>
+        </div>
+        <div class="field">
+          <label>ZIP Code <span class="req">*</span></label>
+          <input type="text" id="zip" placeholder="12345" maxlength="5" />
+          <span class="field-error" id="err-zip">Please enter a valid 5-digit ZIP.</span>
+        </div>
+        <div class="field">
+          <label>Marital Status</label>
+          <select id="marital">
+            <option value="">Select…</option>
+            <option>Single</option>
+            <option>Married</option>
+            <option>Divorced</option>
+            <option>Widowed</option>
+          </select>
+        </div>
+      </div>
+
+      <p class="section-title">Driver's License</p>
+      <div class="form-grid">
+        <div class="field">
+          <label>License Number <span class="req">*</span></label>
+          <input type="text" id="licenseNum" placeholder="D1234567" />
+          <span class="field-error" id="err-licenseNum">Please enter your license number.</span>
+        </div>
+        <div class="field">
+          <label>License State <span class="req">*</span></label>
+          <select id="licenseState">
+            <option value="">Select state…</option>
+            <option>Alabama</option><option>Alaska</option><option>Arizona</option>
+            <option>Arkansas</option><option>California</option><option>Colorado</option>
+            <option>Connecticut</option><option>Delaware</option><option>Florida</option>
+            <option>Georgia</option><option>Hawaii</option><option>Idaho</option>
+            <option>Illinois</option><option>Indiana</option><option>Iowa</option>
+            <option>Kansas</option><option>Kentucky</option><option>Louisiana</option>
+            <option>Maine</option><option>Maryland</option><option>Massachusetts</option>
+            <option>Michigan</option><option>Minnesota</option><option>Mississippi</option>
+            <option>Missouri</option><option>Montana</option><option>Nebraska</option>
+            <option>Nevada</option><option>New Hampshire</option><option>New Jersey</option>
+            <option>New Mexico</option><option>New York</option><option>North Carolina</option>
+            <option>North Dakota</option><option>Ohio</option><option>Oklahoma</option>
+            <option>Oregon</option><option>Pennsylvania</option><option>Rhode Island</option>
+            <option>South Carolina</option><option>South Dakota</option><option>Tennessee</option>
+            <option>Texas</option><option>Utah</option><option>Vermont</option>
+            <option>Virginia</option><option>Washington</option><option>West Virginia</option>
+            <option>Wisconsin</option><option>Wyoming</option>
+          </select>
+          <span class="field-error" id="err-licenseState">Please select license state.</span>
+        </div>
+        <div class="field">
+          <label>Years Licensed</label>
+          <select id="yearsLicensed">
+            <option value="0">Less than 1 year</option>
+            <option value="1">1 year</option>
+            <option value="2">2 years</option>
+            <option value="3">3 years</option>
+            <option value="5" selected>4–5 years</option>
+            <option value="7">6–10 years</option>
+            <option value="15">11–20 years</option>
+            <option value="25">21+ years</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <div></div>
+        <button type="submit" class="btn btn-primary">Continue &rarr;</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ══ STEP 2 — Vehicle Info ══ -->
+  <div class="card step-pane" id="step2">
+    <div class="card-header">
+      <h2>Vehicle Information</h2>
+      <p>Tell us about the vehicle you want to insure</p>
+    </div>
+    <form id="form2" novalidate>
+      <div class="form-grid cols-3">
+        <div class="field">
+          <label>Year <span class="req">*</span></label>
+          <select id="vYear">
+            <option value="">Select year…</option>
+          </select>
+          <span class="field-error" id="err-vYear">Please select a year.</span>
+        </div>
+        <div class="field">
+          <label>Make <span class="req">*</span></label>
+          <select id="vMake">
+            <option value="">Select make…</option>
+            <option>Acura</option><option>Audi</option><option>BMW</option>
+            <option>Buick</option><option>Cadillac</option><option>Chevrolet</option>
+            <option>Chrysler</option><option>Dodge</option><option>Ford</option>
+            <option>GMC</option><option>Honda</option><option>Hyundai</option>
+            <option>Infiniti</option><option>Jeep</option><option>Kia</option>
+            <option>Land Rover</option><option>Lexus</option><option>Lincoln</option>
+            <option>Mazda</option><option>Mercedes-Benz</option><option>Mitsubishi</option>
+            <option>Nissan</option><option>Pontiac</option><option>Porsche</option>
+            <option>Ram</option><option>Subaru</option><option>Tesla</option>
+            <option>Toyota</option><option>Volkswagen</option><option>Volvo</option>
+            <option>Other</option>
+          </select>
+          <span class="field-error" id="err-vMake">Please select a make.</span>
+        </div>
+        <div class="field">
+          <label>Model <span class="req">*</span></label>
+          <input type="text" id="vModel" placeholder="Camry" />
+          <span class="field-error" id="err-vModel">Please enter the model.</span>
+        </div>
+        <div class="field">
+          <label>Body Type <span class="req">*</span></label>
+          <select id="vBody">
+            <option value="">Select type…</option>
+            <option value="sedan">Sedan</option>
+            <option value="suv">SUV / Crossover</option>
+            <option value="truck">Pickup Truck</option>
+            <option value="sports">Sports Car / Coupe</option>
+            <option value="luxury">Luxury / Premium</option>
+            <option value="minivan">Minivan</option>
+            <option value="electric">Electric Vehicle</option>
+            <option value="motorcycle">Motorcycle</option>
+          </select>
+          <span class="field-error" id="err-vBody">Please select body type.</span>
+        </div>
+        <div class="field">
+          <label>Trim / Edition</label>
+          <input type="text" id="vTrim" placeholder="LE, XSE, Limited…" />
+        </div>
+        <div class="field">
+          <label>Color</label>
+          <input type="text" id="vColor" placeholder="Silver" />
+        </div>
+        <div class="field span-3">
+          <label>VIN (Vehicle Identification Number)</label>
+          <input type="text" id="vin" placeholder="1HGBH41JXMN109186" maxlength="17" style="font-family:monospace;letter-spacing:.05em" />
+          <span class="field-hint">17-character VIN found on dashboard or door jamb. Leave blank to skip.</span>
+        </div>
+      </div>
+
+      <p class="section-title">Ownership & Usage</p>
+      <div class="form-grid">
+        <div class="field">
+          <label>Ownership</label>
+          <div class="radio-pills">
+            <div class="radio-pill"><input type="radio" name="ownership" id="own-own" value="own" checked /><label for="own-own">I Own It</label></div>
+            <div class="radio-pill"><input type="radio" name="ownership" id="own-finance" value="finance" /><label for="own-finance">Financing</label></div>
+            <div class="radio-pill"><input type="radio" name="ownership" id="own-lease" value="lease" /><label for="own-lease">Leasing</label></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Primary Use</label>
+          <select id="vUse">
+            <option value="commute">Daily Commute</option>
+            <option value="pleasure">Pleasure / Leisure</option>
+            <option value="business">Business Use</option>
+            <option value="rideshare">Rideshare / Delivery</option>
+            <option value="farm">Farm / Agriculture</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Annual Mileage <span class="req">*</span></label>
+          <div class="slider-wrap">
+            <input type="range" id="mileage" min="2000" max="50000" step="1000" value="12000" oninput="updateMileage(this.value)" />
+            <div class="slider-labels"><span>2,000</span><span id="mileageDisplay">12,000 miles/yr</span><span>50,000</span></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Garage / Storage</label>
+          <select id="garage">
+            <option value="garage">Private Garage</option>
+            <option value="carport">Carport</option>
+            <option value="driveway">Driveway</option>
+            <option value="street">Street Parking</option>
+            <option value="lot">Parking Lot</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Anti-theft Device?</label>
+          <div class="radio-pills">
+            <div class="radio-pill"><input type="radio" name="antitheft" id="at-yes" value="yes" /><label for="at-yes">Yes</label></div>
+            <div class="radio-pill"><input type="radio" name="antitheft" id="at-no" value="no" checked /><label for="at-no">No</label></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Safety Features</label>
+          <select id="safety" multiple style="height:80px;">
+            <option value="abs" selected>ABS Brakes</option>
+            <option value="airbags">Airbags</option>
+            <option value="camera">Backup Camera</option>
+            <option value="blindspot">Blind Spot Monitor</option>
+            <option value="lanekeep">Lane Keep Assist</option>
+            <option value="auto_brake">Auto Emergency Braking</option>
+          </select>
+          <span class="field-hint">Hold Ctrl/Cmd to select multiple</span>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="btn btn-secondary" onclick="goStep(1)">&larr; Back</button>
+        <button type="submit" class="btn btn-primary">Continue &rarr;</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ══ STEP 3 — Driving History ══ -->
+  <div class="card step-pane" id="step3">
+    <div class="card-header">
+      <h2>Driving History</h2>
+      <p>An accurate history ensures the right rate for you. Records typically go back 3–5 years.</p>
+    </div>
+    <form id="form3" novalidate>
+
+      <p class="section-title">Prior Insurance</p>
+      <div class="form-grid">
+        <div class="field">
+          <label>Currently Insured?</label>
+          <div class="radio-pills">
+            <div class="radio-pill"><input type="radio" name="currInsured" id="ci-yes" value="yes" checked onchange="togglePriorInsurance()" /><label for="ci-yes">Yes</label></div>
+            <div class="radio-pill"><input type="radio" name="currInsured" id="ci-no"  value="no" onchange="togglePriorInsurance()" /><label for="ci-no">No</label></div>
+          </div>
+        </div>
+        <div class="field" id="priorCarrierField">
+          <label>Current / Prior Carrier</label>
+          <select id="priorCarrier">
+            <option value="">Select…</option>
+            <option>Allstate</option><option>Farmers</option><option>GEICO</option>
+            <option>Liberty Mutual</option><option>Nationwide</option><option>Progressive</option>
+            <option>State Farm</option><option>USAA</option><option>Travelers</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field" id="priorYearsField">
+          <label>Years with Prior Carrier</label>
+          <select id="priorYears">
+            <option value="0">Less than 1 year</option>
+            <option value="1">1 year</option>
+            <option value="2">2 years</option>
+            <option value="3" selected>3 years</option>
+            <option value="5">4–5 years</option>
+            <option value="7">6–10 years</option>
+            <option value="15">10+ years</option>
+          </select>
+        </div>
+      </div>
+
+      <p class="section-title">Accidents &amp; Violations <span style="font-weight:400;font-size:.8rem;text-transform:none;letter-spacing:0">(last 5 years)</span></p>
+
+      <div class="incident-list" id="incidentList">
+        <!-- rows injected by JS -->
+      </div>
+      <button type="button" class="btn-add-incident" onclick="addIncident()">&#43; Add Accident or Violation</button>
+
+      <p class="section-title">Additional Questions</p>
+      <div class="form-grid">
+        <div class="field">
+          <label>DUI / DWI in last 10 years?</label>
+          <div class="radio-pills">
+            <div class="radio-pill"><input type="radio" name="dui" id="dui-no"  value="no" checked /><label for="dui-no">No</label></div>
+            <div class="radio-pill"><input type="radio" name="dui" id="dui-yes" value="yes" /><label for="dui-yes">Yes</label></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>License ever suspended?</label>
+          <div class="radio-pills">
+            <div class="radio-pill"><input type="radio" name="suspended" id="sus-no"  value="no" checked /><label for="sus-no">No</label></div>
+            <div class="radio-pill"><input type="radio" name="suspended" id="sus-yes" value="yes" /><label for="sus-yes">Yes</label></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>SR-22 Required?</label>
+          <div class="radio-pills">
+            <div class="radio-pill"><input type="radio" name="sr22" id="sr-no"  value="no" checked /><label for="sr-no">No</label></div>
+            <div class="radio-pill"><input type="radio" name="sr22" id="sr-yes" value="yes" /><label for="sr-yes">Yes</label></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Defensive Driving Course completed?</label>
+          <div class="radio-pills">
+            <div class="radio-pill"><input type="radio" name="defdriving" id="dd-no"  value="no" checked /><label for="dd-no">No</label></div>
+            <div class="radio-pill"><input type="radio" name="defdriving" id="dd-yes" value="yes" /><label for="dd-yes">Yes</label></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="btn btn-secondary" onclick="goStep(2)">&larr; Back</button>
+        <button type="submit" class="btn btn-primary">Continue &rarr;</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ══ STEP 4 — Coverage ══ -->
+  <div class="card step-pane" id="step4">
+    <div class="card-header">
+      <h2>Select Your Coverage</h2>
+      <p>Choose the protection that fits your needs and budget</p>
+    </div>
+    <form id="form4" novalidate>
+
+      <p class="section-title">Required Coverage</p>
+      <div class="coverage-grid">
+        <!-- Liability -->
+        <div class="cov-card required-cov">
+          <input type="checkbox" checked disabled />
+          <div class="cov-title">Liability <span class="cov-badge">Required</span></div>
+          <div class="cov-desc">Covers bodily injury &amp; property damage you cause to others.</div>
+          <div class="cov-price">Included in base rate</div>
+          <div class="cov-options">
+            <label>Coverage Limit</label>
+            <select id="liabilityLimit">
+              <option value="25/50">25/50/20 (State Minimum)</option>
+              <option value="50/100" selected>50/100/50</option>
+              <option value="100/300">100/300/100</option>
+              <option value="250/500">250/500/100 (Premium)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- UM/UIM -->
+        <div class="cov-card required-cov">
+          <input type="checkbox" checked disabled />
+          <div class="cov-title">Uninsured Motorist <span class="cov-badge">Required</span></div>
+          <div class="cov-desc">Protects you when hit by uninsured or underinsured drivers.</div>
+          <div class="cov-price">Included in base rate</div>
+          <div class="cov-options">
+            <label>Coverage Limit</label>
+            <select id="umLimit">
+              <option value="25/50">25/50 (State Minimum)</option>
+              <option value="50/100" selected>50/100</option>
+              <option value="100/300">100/300</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <p class="section-title">Optional Coverage</p>
+      <div class="coverage-grid">
+        <!-- Collision -->
+        <div class="cov-card" id="cov-collision" onclick="toggleCov(this,'collision')">
+          <input type="checkbox" id="chk-collision" />
+          <div class="cov-title">Collision</div>
+          <div class="cov-desc">Covers damage to your vehicle from collisions, regardless of fault.</div>
+          <div class="cov-price" id="price-collision">+ $28/mo</div>
+          <div class="cov-options">
+            <label>Deductible</label>
+            <select id="ded-collision" onclick="event.stopPropagation()">
+              <option value="250">$250 deductible</option>
+              <option value="500" selected>$500 deductible</option>
+              <option value="1000">$1,000 deductible</option>
+              <option value="2000">$2,000 deductible</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Comprehensive -->
+        <div class="cov-card" id="cov-comprehensive" onclick="toggleCov(this,'comprehensive')">
+          <input type="checkbox" id="chk-comprehensive" />
+          <div class="cov-title">Comprehensive</div>
+          <div class="cov-desc">Non-collision damage: theft, weather, fire, vandalism, animals.</div>
+          <div class="cov-price" id="price-comprehensive">+ $14/mo</div>
+          <div class="cov-options">
+            <label>Deductible</label>
+            <select id="ded-comprehensive" onclick="event.stopPropagation()">
+              <option value="100">$100 deductible</option>
+              <option value="250">$250 deductible</option>
+              <option value="500" selected>$500 deductible</option>
+              <option value="1000">$1,000 deductible</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- PIP -->
+        <div class="cov-card" id="cov-pip" onclick="toggleCov(this,'pip')">
+          <input type="checkbox" id="chk-pip" />
+          <div class="cov-title">Personal Injury Protection</div>
+          <div class="cov-desc">Covers medical expenses for you &amp; passengers, regardless of fault.</div>
+          <div class="cov-price" id="price-pip">+ $12/mo</div>
+          <div class="cov-options">
+            <label>Coverage Limit</label>
+            <select id="lim-pip" onclick="event.stopPropagation()">
+              <option value="10000">$10,000</option>
+              <option value="25000" selected>$25,000</option>
+              <option value="50000">$50,000</option>
+              <option value="100000">$100,000</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Medical Payments -->
+        <div class="cov-card" id="cov-medpay" onclick="toggleCov(this,'medpay')">
+          <input type="checkbox" id="chk-medpay" />
+          <div class="cov-title">Medical Payments (MedPay)</div>
+          <div class="cov-desc">Pays medical bills up to the limit for you and passengers.</div>
+          <div class="cov-price" id="price-medpay">+ $6/mo</div>
+          <div class="cov-options">
+            <label>Limit</label>
+            <select id="lim-medpay" onclick="event.stopPropagation()">
+              <option value="1000">$1,000</option>
+              <option value="2500" selected>$2,500</option>
+              <option value="5000">$5,000</option>
+              <option value="10000">$10,000</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Roadside -->
+        <div class="cov-card" id="cov-roadside" onclick="toggleCov(this,'roadside')">
+          <input type="checkbox" id="chk-roadside" />
+          <div class="cov-title">Roadside Assistance</div>
+          <div class="cov-desc">Towing, battery jump-start, flat tire, lockout &amp; fuel delivery.</div>
+          <div class="cov-price" id="price-roadside">+ $4/mo</div>
+        </div>
+
+        <!-- Rental -->
+        <div class="cov-card" id="cov-rental" onclick="toggleCov(this,'rental')">
+          <input type="checkbox" id="chk-rental" />
+          <div class="cov-title">Rental Reimbursement</div>
+          <div class="cov-desc">Pays for a rental car while your vehicle is being repaired after a covered claim.</div>
+          <div class="cov-price" id="price-rental">+ $5/mo</div>
+          <div class="cov-options">
+            <label>Daily Limit</label>
+            <select id="lim-rental" onclick="event.stopPropagation()">
+              <option value="30">$30/day (up to $900)</option>
+              <option value="50" selected>$50/day (up to $1,500)</option>
+              <option value="75">$75/day (up to $2,250)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Gap -->
+        <div class="cov-card" id="cov-gap" onclick="toggleCov(this,'gap')">
+          <input type="checkbox" id="chk-gap" />
+          <div class="cov-title">Gap Insurance</div>
+          <div class="cov-desc">Covers the difference between your car's value and loan balance if totaled.</div>
+          <div class="cov-price" id="price-gap">+ $8/mo</div>
+        </div>
+
+        <!-- Glass -->
+        <div class="cov-card" id="cov-glass" onclick="toggleCov(this,'glass')">
+          <input type="checkbox" id="chk-glass" />
+          <div class="cov-title">Full Glass Coverage</div>
+          <div class="cov-desc">Windshield &amp; window repair/replacement with no deductible.</div>
+          <div class="cov-price" id="price-glass">+ $6/mo</div>
+        </div>
+      </div>
+
+      <p class="section-title">Policy Term &amp; Payment</p>
+      <div class="form-grid">
+        <div class="field">
+          <label>Policy Term</label>
+          <div class="radio-pills">
+            <div class="radio-pill"><input type="radio" name="term" id="term-6" value="6" checked /><label for="term-6">6 Months</label></div>
+            <div class="radio-pill"><input type="radio" name="term" id="term-12" value="12" /><label for="term-12">12 Months</label></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Payment Frequency</label>
+          <div class="radio-pills">
+            <div class="radio-pill"><input type="radio" name="payFreq" id="pay-monthly" value="monthly" checked /><label for="pay-monthly">Monthly</label></div>
+            <div class="radio-pill"><input type="radio" name="payFreq" id="pay-semi"    value="semi"    /><label for="pay-semi">6-Month</label></div>
+            <div class="radio-pill"><input type="radio" name="payFreq" id="pay-annual"  value="annual"  /><label for="pay-annual">Annual (Save 5%)</label></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Effective Date <span class="req">*</span></label>
+          <input type="date" id="effectiveDate" />
+        </div>
+        <div class="field">
+          <label>Policy Start Reason</label>
+          <select id="startReason">
+            <option>New vehicle purchase</option>
+            <option>Switching carriers</option>
+            <option>First-time insurance</option>
+            <option>Lapse in coverage</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="btn btn-secondary" onclick="goStep(3)">&larr; Back</button>
+        <button type="submit" class="btn btn-primary">Get My Quote &rarr;</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ══ STEP 5 — Quote ══ -->
+  <div class="card step-pane" id="step5">
+    <div class="card-header">
+      <h2>Your Insurance Quote</h2>
+      <p>Quote valid for 30 days &bull; No obligation to purchase</p>
+    </div>
+
+    <!-- Price Box -->
+    <div class="price-box" id="priceBox">
+      <div class="price-label">ESTIMATED ANNUAL PREMIUM</div>
+      <div class="price-annual" id="annualTotal">$0</div>
+      <div class="price-monthly" id="monthlyTotal">or $0/month</div>
+      <div class="price-breakdown" id="priceBreakdown"></div>
+    </div>
+
+    <!-- Discounts -->
+    <p class="section-title">Your Applied Discounts</p>
+    <div class="discount-list" id="discountList"></div>
+
+    <!-- Summary -->
+    <p class="section-title" style="margin-top:24px">Policy Summary</p>
+    <div class="summary-grid">
+      <div class="summary-section">
+        <h3>Policyholder</h3>
+        <div id="summaryPersonal"></div>
+      </div>
+      <div class="summary-section">
+        <h3>Vehicle</h3>
+        <div id="summaryVehicle"></div>
+      </div>
+      <div class="summary-section">
+        <h3>Coverage</h3>
+        <div id="summaryCoverage"></div>
+      </div>
+      <div class="summary-section">
+        <h3>Policy Details</h3>
+        <div id="summaryPolicy"></div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="btn-row" style="margin-top:32px">
+      <button class="btn btn-secondary" onclick="goStep(4)">&larr; Adjust Coverage</button>
+      <button class="btn btn-success" onclick="purchasePolicy()">&#10003; Purchase This Policy</button>
+    </div>
+  </div>
+
+  <!-- ══ SUCCESS ══ -->
+  <div class="card step-pane" id="stepSuccess">
+    <div class="success-screen">
+      <div class="success-icon">&#127881;</div>
+      <h2>You're Covered!</h2>
+      <p>Your policy has been issued successfully. Check your email for your policy documents and ID cards.</p>
+
+      <div class="policy-card" id="policyCard">
+        <div class="policy-number">POLICY NUMBER</div>
+        <div class="policy-id" id="policyId">AS-2026-000000</div>
+        <div style="border-top:1px solid rgba(255,255,255,.3);margin:12px 0"></div>
+        <div class="policy-detail"><span>Insured</span><strong id="pc-name">—</strong></div>
+        <div class="policy-detail"><span>Vehicle</span><strong id="pc-vehicle">—</strong></div>
+        <div class="policy-detail"><span>Effective</span><strong id="pc-eff">—</strong></div>
+        <div class="policy-detail"><span>Expires</span><strong id="pc-exp">—</strong></div>
+        <div class="policy-detail"><span>Annual Premium</span><strong id="pc-prem">—</strong></div>
+      </div>
+
+      <p style="color:var(--muted);font-size:.85rem;margin-bottom:20px">
+        An email confirmation has been sent to <strong id="successEmail">—</strong><br>
+        Questions? Call <strong>1-800-AUTO-INS</strong> or visit your online portal.
+      </p>
+
+      <button class="btn btn-primary" onclick="startOver()" style="margin:0 auto">Start a New Quote</button>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<footer>
+  &copy; 2026 AutoShield Insurance Group &bull; Licensed in all 50 states &bull;
+  <a href="#">Privacy Policy</a> &bull; <a href="#">Terms of Service</a><br>
+  This quote is an estimate only and subject to underwriting approval. Not a contract of insurance.
+</footer>
+
+<script>
+// ══════════════════════════════════════════════
+//  DATA & STATE
+// ══════════════════════════════════════════════
+const state = {
+  step: 1,
+  personal: {}, vehicle: {}, history: {}, coverage: {},
+  incidents: [],
+  premium: { annual: 0, monthly: 0, breakdown: {}, discounts: [] }
+};
+
+// Coverage monthly add-ons
+const COV_PRICES = {
+  collision: 28, comprehensive: 14, pip: 12,
+  medpay: 6, roadside: 4, rental: 5, gap: 8, glass: 6
+};
+
+// Body type risk multiplier
+const BODY_RISK = {
+  sedan: 1.0, suv: 1.05, truck: 1.08, sports: 1.35,
+  luxury: 1.3, minivan: 0.95, electric: 1.1, motorcycle: 1.6
+};
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+(function init() {
+  // Populate year dropdown
+  const sel = document.getElementById('vYear');
+  for (let y = 2026; y >= 1990; y--) {
+    const o = document.createElement('option');
+    o.value = y; o.textContent = y;
+    sel.appendChild(o);
+  }
+  // Default effective date to tomorrow
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+  document.getElementById('effectiveDate').value = tomorrow.toISOString().slice(0, 10);
+
+  // Wire up form submits
+  document.getElementById('form1').addEventListener('submit', e => { e.preventDefault(); if (validateStep1()) goStep(2); });
+  document.getElementById('form2').addEventListener('submit', e => { e.preventDefault(); if (validateStep2()) goStep(3); });
+  document.getElementById('form3').addEventListener('submit', e => { e.preventDefault(); goStep(4); });
+  document.getElementById('form4').addEventListener('submit', e => { e.preventDefault(); if (validateStep4()) { buildQuote(); goStep(5); } });
+})();
+
+// ══════════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════════
+function goStep(n) {
+  // Hide all panes
+  document.querySelectorAll('.step-pane').forEach(p => p.classList.remove('active'));
+  // Show target
+  const target = n === 'success' ? document.getElementById('stepSuccess') : document.getElementById('step' + n);
+  target.classList.add('active');
+  target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  if (n === 'success') {
+    document.getElementById('stepper').style.display = 'none';
+    return;
+  }
+
+  state.step = n;
+  // Update stepper
+  document.querySelectorAll('.step-item').forEach(item => {
+    const s = parseInt(item.dataset.step);
+    item.classList.remove('active', 'done');
+    if (s < n) item.classList.add('done');
+    if (s === n) item.classList.add('active');
+    // Update circle for done steps
+    const circle = item.querySelector('.step-circle');
+    circle.textContent = s < n ? '✓' : s;
+  });
+}
+
+// ══════════════════════════════════════════════
+//  STEP 1 VALIDATION
+// ══════════════════════════════════════════════
+function validateStep1() {
+  let ok = true;
+  function req(id, errId, testFn) {
+    const el = document.getElementById(id);
+    const err = document.getElementById(errId);
+    const val = el.value.trim();
+    const fail = testFn ? !testFn(val) : !val;
+    el.classList.toggle('error', fail);
+    err && err.classList.toggle('show', fail);
+    if (fail) ok = false;
+    return val;
+  }
+  req('firstName', 'err-firstName');
+  req('lastName',  'err-lastName');
+  req('dob', 'err-dob', v => {
+    if (!v) return false;
+    const age = (new Date() - new Date(v)) / (1000*60*60*24*365.25);
+    return age >= 16;
+  });
+  req('email', 'err-email', v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v));
+  req('phone', 'err-phone', v => v.replace(/\D/g,'').length >= 10);
+  req('address', 'err-address');
+  req('city', 'err-city');
+  req('state', 'err-state');
+  req('zip', 'err-zip', v => /^\d{5}$/.test(v));
+  req('licenseNum', 'err-licenseNum');
+  req('licenseState', 'err-licenseState');
+
+  if (ok) {
+    state.personal = {
+      firstName: document.getElementById('firstName').value.trim(),
+      lastName:  document.getElementById('lastName').value.trim(),
+      dob:       document.getElementById('dob').value,
+      gender:    document.getElementById('gender').value,
+      email:     document.getElementById('email').value.trim(),
+      phone:     document.getElementById('phone').value.trim(),
+      address:   document.getElementById('address').value.trim(),
+      city:      document.getElementById('city').value.trim(),
+      state:     document.getElementById('state').value,
+      zip:       document.getElementById('zip').value.trim(),
+      marital:   document.getElementById('marital').value,
+      licenseNum:    document.getElementById('licenseNum').value.trim(),
+      licenseState:  document.getElementById('licenseState').value,
+      yearsLicensed: parseInt(document.getElementById('yearsLicensed').value)
+    };
+  }
+  return ok;
+}
+
+// ══════════════════════════════════════════════
+//  STEP 2 VALIDATION
+// ══════════════════════════════════════════════
+function validateStep2() {
+  let ok = true;
+  function req(id, errId) {
+    const el = document.getElementById(id);
+    const err = document.getElementById(errId);
+    const val = el.value.trim();
+    el.classList.toggle('error', !val);
+    err && err.classList.toggle('show', !val);
+    if (!val) ok = false;
+    return val;
+  }
+  req('vYear', 'err-vYear');
+  req('vMake', 'err-vMake');
+  req('vModel', 'err-vModel');
+  req('vBody', 'err-vBody');
+
+  if (ok) {
+    const safetyEl = document.getElementById('safety');
+    const safetyFeatures = Array.from(safetyEl.selectedOptions).map(o => o.value);
+    state.vehicle = {
+      year:      parseInt(document.getElementById('vYear').value),
+      make:      document.getElementById('vMake').value,
+      model:     document.getElementById('vModel').value.trim(),
+      body:      document.getElementById('vBody').value,
+      trim:      document.getElementById('vTrim').value.trim(),
+      color:     document.getElementById('vColor').value.trim(),
+      vin:       document.getElementById('vin').value.trim(),
+      ownership: document.querySelector('input[name=ownership]:checked').value,
+      use:       document.getElementById('vUse').value,
+      mileage:   parseInt(document.getElementById('mileage').value),
+      garage:    document.getElementById('garage').value,
+      antitheft: document.querySelector('input[name=antitheft]:checked').value,
+      safety:    safetyFeatures
+    };
+  }
+  return ok;
+}
+
+// ══════════════════════════════════════════════
+//  STEP 4 VALIDATION
+// ══════════════════════════════════════════════
+function validateStep4() {
+  const eff = document.getElementById('effectiveDate').value;
+  if (!eff) { alert('Please select an effective date.'); return false; }
+  state.coverage = {
+    liabilityLimit:   document.getElementById('liabilityLimit').value,
+    umLimit:          document.getElementById('umLimit').value,
+    collision:        document.getElementById('chk-collision').checked,
+    comprehensive:    document.getElementById('chk-comprehensive').checked,
+    pip:              document.getElementById('chk-pip').checked,
+    medpay:           document.getElementById('chk-medpay').checked,
+    roadside:         document.getElementById('chk-roadside').checked,
+    rental:           document.getElementById('chk-rental').checked,
+    gap:              document.getElementById('chk-gap').checked,
+    glass:            document.getElementById('chk-glass').checked,
+    dedCollision:     document.getElementById('ded-collision').value,
+    dedComprehensive: document.getElementById('ded-comprehensive').value,
+    term:             document.querySelector('input[name=term]:checked').value,
+    payFreq:          document.querySelector('input[name=payFreq]:checked').value,
+    effectiveDate:    eff,
+    startReason:      document.getElementById('startReason').value
+  };
+  return true;
+}
+
+// ══════════════════════════════════════════════
+//  COVERAGE TOGGLE
+// ══════════════════════════════════════════════
+function toggleCov(card, key) {
+  card.classList.toggle('selected');
+  document.getElementById('chk-' + key).checked = card.classList.contains('selected');
+}
+
+// ══════════════════════════════════════════════
+//  MILEAGE SLIDER
+// ══════════════════════════════════════════════
+function updateMileage(v) {
+  document.getElementById('mileageDisplay').textContent = parseInt(v).toLocaleString() + ' miles/yr';
+}
+
+// ══════════════════════════════════════════════
+//  PRIOR INSURANCE TOGGLE
+// ══════════════════════════════════════════════
+function togglePriorInsurance() {
+  const insured = document.querySelector('input[name=currInsured]:checked').value === 'yes';
+  document.getElementById('priorCarrierField').style.opacity = insured ? '1' : '.4';
+  document.getElementById('priorYearsField').style.opacity   = insured ? '1' : '.4';
+}
+
+// ══════════════════════════════════════════════
+//  INCIDENTS
+// ══════════════════════════════════════════════
+let incidentCount = 0;
+function addIncident() {
+  const id = ++incidentCount;
+  const div = document.createElement('div');
+  div.className = 'incident-row';
+  div.id = 'incident-' + id;
+  div.innerHTML = `
+    <div class="field">
+      <label>Type</label>
+      <select>
+        <option value="accident-fault">At-Fault Accident</option>
+        <option value="accident-nofault">Not-At-Fault Accident</option>
+        <option value="speeding">Speeding Ticket</option>
+        <option value="reckless">Reckless Driving</option>
+        <option value="redlight">Red Light / Stop Sign</option>
+        <option value="other-violation">Other Violation</option>
+        <option value="claim">Insurance Claim</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Date</label>
+      <input type="month" max="${new Date().toISOString().slice(0,7)}" />
+    </div>
+    <div class="field">
+      <label>Claim Amount (if any)</label>
+      <input type="number" placeholder="$0" min="0" step="100" />
+    </div>
+    <button class="btn-remove" onclick="removeIncident(${id})" title="Remove">&#10005;</button>
+  `;
+  document.getElementById('incidentList').appendChild(div);
+  state.incidents.push({ id });
+}
+
+function removeIncident(id) {
+  document.getElementById('incident-' + id).remove();
+  state.incidents = state.incidents.filter(i => i.id !== id);
+}
+
+// ══════════════════════════════════════════════
+//  PREMIUM CALCULATION
+// ══════════════════════════════════════════════
+function buildQuote() {
+  const p = state.personal;
+  const v = state.vehicle;
+  const c = state.coverage;
+
+  // Base rate
+  let base = 900;
+
+  // Vehicle age factor
+  const age = 2026 - v.year;
+  if (age <= 2) base *= 1.18;
+  else if (age <= 5) base *= 1.10;
+  else if (age <= 10) base *= 1.0;
+  else if (age <= 15) base *= 0.92;
+  else base *= 0.85;
+
+  // Body type
+  base *= (BODY_RISK[v.body] || 1.0);
+
+  // Driver age
+  const driverAge = Math.floor((new Date() - new Date(p.dob)) / (1000*60*60*24*365.25));
+  if (driverAge < 21)      base *= 1.55;
+  else if (driverAge < 25) base *= 1.32;
+  else if (driverAge < 30) base *= 1.12;
+  else if (driverAge < 65) base *= 1.0;
+  else                     base *= 1.12;
+
+  // Mileage
+  if (v.mileage > 30000) base *= 1.18;
+  else if (v.mileage > 20000) base *= 1.10;
+  else if (v.mileage > 15000) base *= 1.05;
+  else if (v.mileage < 7500)  base *= 0.92;
+
+  // Incidents
+  const incidentRows = document.querySelectorAll('.incident-row');
+  const numIncidents = incidentRows.length;
+  if (numIncidents === 1) base *= 1.25;
+  else if (numIncidents === 2) base *= 1.50;
+  else if (numIncidents >= 3) base *= 1.80;
+
+  // DUI
+  if (document.querySelector('input[name=dui]:checked').value === 'yes') base *= 1.60;
+
+  // SR-22
+  if (document.querySelector('input[name=sr22]:checked').value === 'yes') base += 350;
+
+  // Liability limit adjustment
+  const liabAdj = { '25/50': 0.9, '50/100': 1.0, '100/300': 1.18, '250/500': 1.38 };
+  base *= (liabAdj[c.liabilityLimit] || 1.0);
+
+  // Coverage add-ons
+  let optMonthly = 0;
+  const breakdown = { 'Liability & UM': Math.round(base / 12) };
+
+  const covKeys = ['collision','comprehensive','pip','medpay','roadside','rental','gap','glass'];
+  covKeys.forEach(key => {
+    if (c[key]) {
+      let mo = COV_PRICES[key];
+      // Deductible discount
+      const ded = parseInt(document.getElementById('ded-' + key)?.value || 500);
+      if (ded >= 1000) mo *= 0.82;
+      else if (ded >= 500) mo *= 0.95;
+      else if (ded <= 250) mo *= 1.12;
+      optMonthly += mo;
+      breakdown[key.charAt(0).toUpperCase() + key.slice(1)] = Math.round(mo * 12);
+    }
+  });
+
+  let annual = Math.round(base) + Math.round(optMonthly * 12);
+
+  // ── Discounts ──
+  const discounts = [];
+  if (p.yearsLicensed >= 7) { discounts.push('Experienced Driver (5%)'); annual *= 0.95; }
+  if (v.antitheft === 'yes') { discounts.push('Anti-theft Device (3%)'); annual *= 0.97; }
+  if (v.safety.includes('abs')) { discounts.push('ABS Brakes (2%)'); annual *= 0.98; }
+  if (v.safety.length >= 3) { discounts.push('Multiple Safety Features (3%)'); annual *= 0.97; }
+  if (v.garage === 'garage') { discounts.push('Garage Parking (4%)'); annual *= 0.96; }
+  if (document.querySelector('input[name=defdriving]:checked').value === 'yes') {
+    discounts.push('Defensive Driving Course (5%)'); annual *= 0.95;
+  }
+  const priorYears = parseInt(document.getElementById('priorYears').value);
+  if (priorYears >= 3) { discounts.push('Loyalty / Prior Insurance (6%)'); annual *= 0.94; }
+  if (p.marital === 'Married') { discounts.push('Married Driver (4%)'); annual *= 0.96; }
+  if (c.payFreq === 'annual') { discounts.push('Pay-in-Full (5%)'); annual *= 0.95; }
+  if (numIncidents === 0 && document.querySelector('input[name=dui]:checked').value === 'no') {
+    discounts.push('Clean Record (8%)'); annual *= 0.92;
+  }
+  if (c.collision && c.comprehensive) { discounts.push('Bundle Discount (3%)'); annual *= 0.97; }
+
+  annual = Math.round(annual);
+  const monthly = Math.round(annual / 12);
+
+  state.premium = { annual, monthly, breakdown, discounts };
+  renderQuote();
+}
+
+function renderQuote() {
+  const { annual, monthly, breakdown, discounts } = state.premium;
+  const p = state.personal;
+  const v = state.vehicle;
+  const c = state.coverage;
+
+  document.getElementById('annualTotal').textContent = '$' + annual.toLocaleString();
+  document.getElementById('monthlyTotal').textContent = 'or $' + monthly.toLocaleString() + '/month';
+
+  // Breakdown pills
+  const pb = document.getElementById('priceBreakdown');
+  pb.innerHTML = '';
+  Object.entries(breakdown).forEach(([label, amt]) => {
+    pb.innerHTML += `<div class="price-item"><div class="pi-label">${label}</div><div class="pi-val">$${amt}/yr</div></div>`;
+  });
+
+  // Discounts
+  const dl = document.getElementById('discountList');
+  dl.innerHTML = discounts.length
+    ? discounts.map(d => `<span class="discount-badge">✓ ${d}</span>`).join('')
+    : '<span style="color:var(--muted);font-size:.85rem">No additional discounts applied.</span>';
+
+  // Personal summary
+  const age = Math.floor((new Date() - new Date(p.dob)) / (1000*60*60*24*365.25));
+  document.getElementById('summaryPersonal').innerHTML = rows([
+    ['Name', `${p.firstName} ${p.lastName}`],
+    ['Date of Birth', formatDate(p.dob) + ` (Age ${age})`],
+    ['Address', `${p.city}, ${p.state} ${p.zip}`],
+    ['Email', p.email],
+    ['License', p.licenseNum + ' (' + p.licenseState + ')']
+  ]);
+
+  // Vehicle summary
+  document.getElementById('summaryVehicle').innerHTML = rows([
+    ['Vehicle', `${v.year} ${v.make} ${v.model}`],
+    ['Type', v.body.charAt(0).toUpperCase() + v.body.slice(1)],
+    ['Usage', document.getElementById('vUse').options[document.getElementById('vUse').selectedIndex].text],
+    ['Annual Miles', v.mileage.toLocaleString()],
+    ['Ownership', v.ownership.charAt(0).toUpperCase() + v.ownership.slice(1)],
+    ['VIN', v.vin || 'Not provided']
+  ]);
+
+  // Coverage summary
+  const covLines = [
+    ['Liability', c.liabilityLimit],
+    ['Uninsured Motorist', c.umLimit],
+  ];
+  if (c.collision)      covLines.push(['Collision', `$${c.dedCollision} ded.`]);
+  if (c.comprehensive)  covLines.push(['Comprehensive', `$${c.dedComprehensive} ded.`]);
+  if (c.pip)            covLines.push(['PIP', 'Included']);
+  if (c.medpay)         covLines.push(['MedPay', 'Included']);
+  if (c.roadside)       covLines.push(['Roadside Assist', 'Included']);
+  if (c.rental)         covLines.push(['Rental Reimb.', 'Included']);
+  if (c.gap)            covLines.push(['Gap Insurance', 'Included']);
+  if (c.glass)          covLines.push(['Full Glass', 'Included']);
+  document.getElementById('summaryCoverage').innerHTML = rows(covLines);
+
+  // Policy summary
+  const termLabel = c.term === '12' ? '12 Months' : '6 Months';
+  const payLabel  = { monthly: 'Monthly', semi: '6-Month', annual: 'Annual (paid in full)' }[c.payFreq];
+  const expDate   = new Date(c.effectiveDate);
+  expDate.setMonth(expDate.getMonth() + parseInt(c.term));
+  document.getElementById('summaryPolicy').innerHTML = rows([
+    ['Effective', formatDate(c.effectiveDate)],
+    ['Expires',   formatDate(expDate.toISOString().slice(0,10))],
+    ['Term', termLabel],
+    ['Payment', payLabel],
+    ['Annual Premium', '$' + state.premium.annual.toLocaleString()],
+    ['Monthly Premium', '$' + state.premium.monthly.toLocaleString()]
+  ]);
+}
+
+function rows(pairs) {
+  return pairs.map(([k,v]) => `<div class="summary-row"><span class="key">${k}</span><span class="val">${v}</span></div>`).join('');
+}
+
+function formatDate(iso) {
+  if (!iso) return '—';
+  const [y,m,d] = iso.split('-');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${months[parseInt(m)-1]} ${parseInt(d)}, ${y}`;
+}
+
+// ══════════════════════════════════════════════
+//  PURCHASE
+// ══════════════════════════════════════════════
+function purchasePolicy() {
+  const p = state.personal;
+  const v = state.vehicle;
+  const c = state.coverage;
+
+  const policyNum = 'AS-2026-' + Math.floor(100000 + Math.random() * 900000);
+  const expDate   = new Date(c.effectiveDate);
+  expDate.setMonth(expDate.getMonth() + parseInt(c.term));
+
+  document.getElementById('policyId').textContent     = policyNum;
+  document.getElementById('pc-name').textContent      = `${p.firstName} ${p.lastName}`;
+  document.getElementById('pc-vehicle').textContent   = `${v.year} ${v.make} ${v.model}`;
+  document.getElementById('pc-eff').textContent       = formatDate(c.effectiveDate);
+  document.getElementById('pc-exp').textContent       = formatDate(expDate.toISOString().slice(0,10));
+  document.getElementById('pc-prem').textContent      = '$' + state.premium.annual.toLocaleString();
+  document.getElementById('successEmail').textContent = p.email;
+
+  goStep('success');
+}
+
+// ══════════════════════════════════════════════
+//  START OVER
+// ══════════════════════════════════════════════
+function startOver() {
+  document.getElementById('stepper').style.display = '';
+  document.getElementById('form1').reset();
+  document.getElementById('form2').reset();
+  document.getElementById('form3').reset();
+  document.getElementById('form4').reset();
+  document.getElementById('incidentList').innerHTML = '';
+  state.incidents = [];
+  incidentCount = 0;
+  goStep(1);
+}
+</script>
+</body>
+</html>
